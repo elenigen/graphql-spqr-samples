@@ -1,12 +1,17 @@
 package io.leangen.spqr.samples.demo.query.annotated;
 
+import graphql.GraphQLError;
+import graphql.execution.DataFetcherResult;
+import graphql.servlet.GenericGraphQLError;
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLQuery;
 import io.leangen.spqr.samples.demo.dto.Vendor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,12 +34,14 @@ public class VendorQuery {
      * @return
      */
     @GraphQLMutation(name = "createVendor")
-    public Vendor createVendor(@GraphQLArgument(name = "vendor") Vendor vendor){
+    public DataFetcherResult<Vendor> createVendor(@GraphQLArgument(name = "vendor") Vendor vendor){
         Vendor createdVendor =  new Vendor((long) mockVendorStorage.size() + 1,
                 vendor.getName(),
                 vendor.getAddress());
         mockVendorStorage.add(createdVendor);
-        return createdVendor;
+        List<GraphQLError> errors = new ArrayList<>();
+        errors.add(new GenericGraphQLError("invalid data"));
+        return new DataFetcherResult<>(createdVendor, errors);
     }
     
     
