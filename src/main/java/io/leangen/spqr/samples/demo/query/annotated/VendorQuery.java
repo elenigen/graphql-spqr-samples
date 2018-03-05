@@ -1,7 +1,9 @@
 package io.leangen.spqr.samples.demo.query.annotated;
 
+import graphql.ErrorType;
 import graphql.GraphQLError;
 import graphql.execution.DataFetcherResult;
+import graphql.language.SourceLocation;
 import graphql.servlet.GenericGraphQLError;
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLMutation;
@@ -10,6 +12,7 @@ import io.leangen.spqr.samples.demo.dto.Vendor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -40,10 +43,35 @@ public class VendorQuery {
                 vendor.getAddress());
         mockVendorStorage.add(createdVendor);
         List<GraphQLError> errors = new ArrayList<>();
-        errors.add(new GenericGraphQLError("invalid data"));
+        errors.add(generateFakeError("invalid data1", "path1"));
+        errors.add(generateFakeError("invalid data2", "path1"));
         return new DataFetcherResult<>(createdVendor, errors);
     }
-    
+
+    private GraphQLError generateFakeError(String message, String path) {
+        return new GraphQLError() {
+            @Override
+            public String getMessage() {
+                return "Something went wrong";
+            }
+
+            @Override
+            public List<Object> getPath() {
+                return Collections.singletonList(path);
+            }
+
+            @Override
+            public List<SourceLocation> getLocations() {
+                return null;
+            }
+
+            @Override
+            public ErrorType getErrorType() {
+                return ErrorType.ValidationError;
+            }
+        };
+    }
+
     
     /**
      * Retrieve saved Vendor by id.
